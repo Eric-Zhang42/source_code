@@ -17,7 +17,9 @@ module ex(
     //执行后结果
     output reg[`RegAddrBus] waddr_reg_o,            //写目标寄存器地址
     output reg we_reg_o,                            //写使能信号
-    output reg[`RegBus] wdata_o                     //处理后的数据
+    output reg[`RegBus] wdata_o,                     //处理后的数据
+
+    output reg stallreq_o                           //暂停请求信号
 
 );
 
@@ -100,6 +102,16 @@ always@(*) begin
             wdata_o = `ZeroWord;
         end
     endcase
+end
+
+//暂停请求信号
+always @(*)begin
+    if(rst == `RstEnable)begin
+        stallreq_o = `NoStop;
+    end
+    else begin
+        stallreq_o = `NoStop;
+    end
 end
 
 endmodule

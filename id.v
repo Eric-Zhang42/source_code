@@ -22,6 +22,8 @@ module id( //功能：在给指令解码的同时，取两个操作数送给下一级执行阶段
     //当前是否为延迟槽指令
     input wire now_in_delayslot_i,                      //当前是否为延迟槽指令
 
+    //<-in out->
+
     //给寄存器堆的控制信号
     output reg[`RegAddrBus] raddr1_o,                    //寄存器地址，用于告诉寄存器，读取其中的数据
     output reg[`RegAddrBus] raddr2_o,
@@ -48,7 +50,10 @@ module id( //功能：在给指令解码的同时，取两个操作数送给下一级执行阶段
     output reg now_in_delayslot_o,                          //当前指令是否为延迟槽
 
     //跳转成功后可能会返回当前下一条语句的地址
-    output reg [`InstAddrBus] return_addr_o                 //返回32位的地址存入寄存器堆
+    output reg [`InstAddrBus] return_addr_o,                 //返回32位的地址存入寄存器堆
+
+    //暂停请求信号
+    output reg stallreq_o                      //暂停请求信号
 );
 
 
@@ -305,7 +310,8 @@ always@(*) begin
                 // waddr_reg_o = `NOPRegAddr;
                 
                 branch_flag_o = `JumpEnable;
-                branch_target_addr_o = {pc_plus_1[31:28], inst_i[25:0], 2'b00}; //跳转目标地址
+                branch_target_addr_o = {6'b000000, inst_i[25:0]}; //跳转目标地址
+                // branch_target_addr_o = {pc_plus_1[31:28], inst_i[25:0], 2'b00}; //跳转目标地址
                 next_in_delayslot_o = `IsDelaySlot;
                 return_addr_o = `ZeroWord;
                 instvalid = `InstValid;
@@ -319,7 +325,7 @@ always@(*) begin
                 waddr_reg_o = 5'd31; //写入31号寄存器
                 
                 branch_flag_o = `JumpEnable;
-                branch_target_addr_o = {pc_plus_1[31:28], inst_i[25:0], 2'b00}; //跳转目标地址
+                branch_target_addr_o = {6'b000000, inst_i[25:0]}; //跳转目标地址
                 next_in_delayslot_o = `IsDelaySlot;
                 return_addr_o = pc_plus_2;
                 instvalid = `InstValid;
@@ -392,5 +398,14 @@ always @(*)begin
     end
 end
 
+//暂停请求信号
+always @(*)begin
+    if(rst == `RstEnable)begin
+        stallreq_o = `NoStop;
+    end
+    else begin
+        stallreq_o = `NoStop;
+    end
+end
 
 endmodule

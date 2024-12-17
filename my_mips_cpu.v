@@ -91,6 +91,11 @@ wire [`RegBus] mem_wb2regfile__wdata;
 wire [`InstAddrBus] id2pc__branch_target_addr;
 wire id2pc__branch_flag;
 
+//连接ctrl模块与其他模块
+wire stallreq_from_id;
+wire stallreq_from_ex;
+wire [`StallBus] stall;
+
 //****************************************************************//
 //**************************实例化模块*****************************//
 //****************************************************************//
@@ -101,6 +106,7 @@ wire id2pc__branch_flag;
     .rst(rst),
     .branch_target_addr_i(id2pc__branch_target_addr),
     .branch_flag_i(id2pc__branch_flag),
+    .stall(stall),
     // <-in out->
     .pc(pc),
     .ce(rom_ce_o)
@@ -117,6 +123,8 @@ assign rom_addr_o = pc;
     .rst(rst),
     .if_pc(pc),
     .if_inst(rom_data_i),
+    .stall(stall),
+    //<-in out->
     .id_pc(if_id2id__pc),
     .id_inst(if_id2id__inst)
 );
@@ -169,7 +177,9 @@ assign rom_addr_o = pc;
     .next_in_delayslot_o(id2id_ex__next_in_delayslot),
     .now_in_delayslot_o(id2id_ex__now_in_delayslot),
     //跳转成功后可能会返回当前下一条语句的地址
-    .return_addr_o(id2id_ex__return_addr)
+    .return_addr_o(id2id_ex__return_addr),
+    //暂停请求
+    .stallreq_o(stallreq_from_id)
 );
 
 
@@ -215,6 +225,7 @@ assign mem2id__waddr_reg = ex_mem2mem__waddr_reg;
     .id_now_in_delayslot_i(id2id_ex__now_in_delayslot),
     .id_next_in_delayslot_i(id2id_ex__next_in_delayslot),
     .id_return_addr_i(id2id_ex__return_addr),
+    .stall(stall),
 
     //<-in out->
 
@@ -243,9 +254,12 @@ assign mem2id__waddr_reg = ex_mem2mem__waddr_reg;
     .now_in_delayslot_i(id_ex2ex__now_in_delayslot),
     .return_addr_i(id_ex2ex__return_addr),
     
+    // <-in out->
+
     .waddr_reg_o(ex2ex_mem__waddr_reg),
     .we_reg_o(ex2ex_mem__we_reg),
-    .wdata_o(ex2ex_mem__wdata)
+    .wdata_o(ex2ex_mem__wdata),
+    .stallreq_o(stallreq_from_ex)
 );
 
 
@@ -256,6 +270,8 @@ assign mem2id__waddr_reg = ex_mem2mem__waddr_reg;
     .ex_waddr_reg_i(ex2ex_mem__waddr_reg),
     .ex_we_reg_i(ex2ex_mem__we_reg),
     .ex_wdata_i(ex2ex_mem__wdata),
+    .stall(stall),
+    // <-in out->
     .mem_waddr_reg_o(ex_mem2mem__waddr_reg),
     .mem_we_reg_o(ex_mem2mem__we_reg),
     .mem_wdata_o(ex_mem2mem__wdata)
@@ -268,6 +284,7 @@ assign mem2id__waddr_reg = ex_mem2mem__waddr_reg;
     .waddr_reg_i(ex_mem2mem__waddr_reg),
     .we_reg_i(ex_mem2mem__we_reg),
     .wdata_i(ex_mem2mem__wdata),
+    // <-in out->
     .waddr_reg_o(mem2mem_wb__waddr_reg),
     .we_reg_o(mem2mem_wb__we_reg),
     .wdata_o(mem2mem_wb__wdata)
@@ -281,11 +298,22 @@ assign mem2id__waddr_reg = ex_mem2mem__waddr_reg;
     .mem_waddr_reg_i(mem2mem_wb__waddr_reg),
     .mem_we_reg_i(mem2mem_wb__we_reg),
     .mem_wdata_i(mem2mem_wb__wdata),
+    .stall(stall),
+
+    // <-in out->
     
     .wb_waddr_reg_o(mem_wb2regfile__waddr),
     .wb_we_reg_o(mem_wb2regfile__we),
     .wb_wdata_o(mem_wb2regfile__wdata)
 );
 
+// ctrl模块实例化
+(*DONT_TOUCH = "yes"*) ctrl ctrl_inst0(
+    .rst(rst),
+    .stallreq_from_id(stallreq_from_id),
+    .stallreq_from_ex(stallreq_from_ex),
+    // <-in out->
+    .stall(stall)
+);
 
 endmodule

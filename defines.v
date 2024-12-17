@@ -20,6 +20,9 @@
 `define ChipEnable          1'b1            //芯片使能
 `define ChipDisable         1'b0            //芯片禁止
 
+`define Stop                1'b1            //暂停
+`define NoStop              1'b0            //继续
+
 //**************************    与跳转有关的宏定义    **********************//
 `define JumpEnable          1'b1            //跳转使能
 `define JumpDisable         1'b0            //跳转禁止
@@ -86,7 +89,6 @@
 `define InstMenNum          1023            //ROM的字数1023 (depth)
 `define InstMemNumLog2      10              //ROM实际使用的地址线宽度
 
-
 //*************************     与通用寄存器regs有关的宏定义    *******************//
 `define RegAddrBus          4:0             //Regs模块的地址线宽度
 `define RegBus              31:0            //regs模块的数据线宽度
@@ -96,3 +98,6 @@
 `define RegNum              32              //通用寄存器数量
 `define RegNumLog2          5               //通用寄存器使用的地址位数
 `define NOPRegAddr          5'b00000        //
+
+//*************************     与暂停流水线ctrl模块有关的宏定义    *******************//
+`define StallBus            5:0             //暂停流水线的控制信号宽度

@@ -6,10 +6,11 @@ module pc_reg (
     input wire clk,
     input wire rst,
     input wire [`RegBus]branch_target_addr_i, //跳转的目标地址
-    input wire branch_flag_i,        //跳转使能
+    input wire branch_flag_i,       //跳转使能
+    input wire [`StallBus] stall,         //暂停信号
 
-    output reg[`InstAddrBus] pc, //指令的地址
-    output reg ce               //给指令寄存器rom_program模块的使能信号
+    output reg[`InstAddrBus] pc,    //指令的地址
+    output reg ce                   //给指令寄存器rom_program模块的使能信号
 );
 
 //指令存储器ce
@@ -29,6 +30,9 @@ always@(posedge clk) begin
     end
     else if(branch_flag_i == `JumpEnable)begin
         pc <= branch_target_addr_i;             //跳转时，pc赋值为跳转目标地址
+    end
+    else if(stall[0] == `Stop)begin
+        pc <= pc;                               //暂停时，pc不变
     end
     else begin
         pc <= pc + 1;                           //正常工作时，时钟有效沿到来pc+4
