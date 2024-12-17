@@ -92,7 +92,8 @@ wire [`InstAddrBus] id2pc__branch_target_addr;
 wire id2pc__branch_flag;
 
 //连接ctrl模块与其他模块
-wire stallreq_from_id;
+wire stallreq_upstream_from_id;
+wire stallreq_downstream_from_id;
 wire stallreq_from_ex;
 wire [`StallBus] stall;
 
@@ -179,7 +180,8 @@ assign rom_addr_o = pc;
     //跳转成功后可能会返回当前下一条语句的地址
     .return_addr_o(id2id_ex__return_addr),
     //暂停请求
-    .stallreq_o(stallreq_from_id)
+    .stallreq_downstream_o(stallreq_downstream_from_id),
+    .stallreq_upstream_o(stallreq_upstream_from_id)
 );
 
 
@@ -310,7 +312,8 @@ assign mem2id__waddr_reg = ex_mem2mem__waddr_reg;
 // ctrl模块实例化
 (*DONT_TOUCH = "yes"*) ctrl ctrl_inst0(
     .rst(rst),
-    .stallreq_from_id(stallreq_from_id),
+    .stallreq_upstream_from_id(stallreq_upstream_from_id),
+    .stallreq_downstream_from_id(stallreq_downstream_from_id),
     .stallreq_from_ex(stallreq_from_ex),
     // <-in out->
     .stall(stall)

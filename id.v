@@ -53,7 +53,9 @@ module id( //功能：在给指令解码的同时，取两个操作数送给下一级执行阶段
     output reg [`InstAddrBus] return_addr_o,                 //返回32位的地址存入寄存器堆
 
     //暂停请求信号
-    output reg stallreq_o                      //暂停请求信号
+    output reg stallreq_upstream_o,                         //请求暂停上游信号
+    output reg stallreq_downstream_o                        //请求暂停下游信号
+    
 );
 
 
@@ -89,12 +91,16 @@ always@(*) begin
         alusel_o = `EXE_RES_NOP;
         waddr_reg_o = `NOPRegAddr;
         we_reg_o = `WriteDisable;
-        instvalid = `InstValid;
+        instvalid = `InstInvalid;
         re1_o = `ReadDisable;
         re2_o = `ReadDisable;
         raddr1_o = `NOPRegAddr;
         raddr2_o = `NOPRegAddr;
         imm = `ZeroWord;
+        branch_flag_o = `JumpDisable;
+        branch_target_addr_o = `NOPRegAddr;
+        next_in_delayslot_o = `IsNotDelaySlot;
+        stallreq_upstream_o = `NoStop;
     end
     
     //这部分赋默认值, 相当于放在后面的default里，是为了让SPECIAL_INST（R型指令）更方便
@@ -114,6 +120,7 @@ always@(*) begin
         branch_flag_o = `JumpDisable;
         branch_target_addr_o = `NOPRegAddr;
         next_in_delayslot_o = `IsNotDelaySlot;
+        stallreq_upstream_o = `NoStop;
 
         case(op)
             `EXE_SPECIAL_INST: begin        //R型指令
@@ -197,6 +204,7 @@ always@(*) begin
                             next_in_delayslot_o = `IsDelaySlot;
                             return_addr_o = `ZeroWord;
                             instvalid = `InstValid;
+                            stallreq_upstream_o = `Stop;
                         end
                         `EXE_FUN_JALR: begin
                             we_reg_o = `WriteEnable;
@@ -213,6 +221,7 @@ always@(*) begin
                             next_in_delayslot_o = `IsDelaySlot;
                             return_addr_o = pc_plus_2;
                             instvalid = `InstValid;
+                            stallreq_upstream_o = `Stop;
                         end
 
                         default: begin
@@ -398,13 +407,13 @@ always @(*)begin
     end
 end
 
-//暂停请求信号
+//暂停下游的请求信号
 always @(*)begin
     if(rst == `RstEnable)begin
-        stallreq_o = `NoStop;
+        stallreq_downstream_o = `NoStop;
     end
     else begin
-        stallreq_o = `NoStop;
+        stallreq_downstream_o = `NoStop;
     end
 end
 
