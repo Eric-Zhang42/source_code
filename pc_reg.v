@@ -12,7 +12,6 @@ module pc_reg (
     output reg[`InstAddrBus] pc,    //指令的地址
     output reg ce                   //给指令寄存器rom_program模块的使能信号
 );
-
 //指令存储器ce
 always @(posedge clk) begin
     if(rst == `RstEnable) begin
@@ -32,7 +31,12 @@ always@(posedge clk) begin
         pc <= branch_target_addr_i;             //跳转时，pc赋值为跳转目标地址
     end
     else if(stall[0] == `Stop)begin
-        pc <= pc;                               //暂停时，pc不变
+        if(stall[1] == `NoStop)begin            //这里如果想要像ex_mem模块一样，输出空指令，不是将pc改为`ZeroWord（这样会输出第一条指令），而是需要对ce赋值，让rom_program模块输出空指令
+            pc <= pc;
+        end
+        else begin
+            pc <= pc;
+        end
     end
     else begin
         pc <= pc + 1;                           //正常工作时，时钟有效沿到来pc+4
