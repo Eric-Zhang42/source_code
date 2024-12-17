@@ -11,6 +11,16 @@ module if_id(   //取指令阶段 instruction fetch to instruction decode
     output reg[`InstAddrBus] id_pc, 
     output reg[`InstBus] id_inst
 );
+    reg [`InstAddrBus] pc_temp;  //临时存储pc，为了抵消指令在rom_program处发生的一个时钟的延迟，也给pc加一个延迟
+    always@(posedge clk) begin
+        if(rst == `RstEnable) begin
+            pc_temp <= `ZeroWord;
+        end
+        else begin
+            pc_temp <= if_pc;
+        end
+    end
+
     always@(posedge clk) begin 
         if(rst == `RstEnable) begin
             id_pc <= `ZeroWord;
@@ -27,7 +37,7 @@ module if_id(   //取指令阶段 instruction fetch to instruction decode
             end
         end
         else begin  //正常取指
-            id_pc <= if_pc;
+            id_pc <= pc_temp;
             id_inst <= if_inst;
         end
     end
