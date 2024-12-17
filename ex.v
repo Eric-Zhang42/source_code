@@ -11,6 +11,9 @@ module ex(
     input wire[`RegAddrBus] waddr_reg_i,            //写目标寄存器地址
     input wire we_reg_i,                            //写使能信号
 
+    input wire now_in_delayslot_i,                  //当前指令是否是延迟槽指令
+    input wire [`InstAddrBus] return_addr_i,         //返回地址
+
     //执行后结果
     output reg[`RegAddrBus] waddr_reg_o,            //写目标寄存器地址
     output reg we_reg_o,                            //写使能信号
@@ -89,6 +92,9 @@ always@(*) begin
         end
         `EXE_RES_SHIFT: begin           //移位运算类型
             wdata_o = shiftres;
+        end
+        `EXE_RES_JUMP_BRANCH: begin     //跳转结果类型，返回跳转前位置处的指令所在地址
+            wdata_o = return_addr_i;
         end
         default: begin
             wdata_o = `ZeroWord;

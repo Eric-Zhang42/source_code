@@ -48,7 +48,7 @@ module id( //功能：在给指令解码的同时，取两个操作数送给下一级执行阶段
     output reg now_in_delayslot_o,                          //当前指令是否为延迟槽
 
     //跳转成功后可能会返回当前下一条语句的地址
-    output reg return_addr_o                              //返回地址存入寄存器堆
+    output reg [`InstAddrBus] return_addr_o                 //返回32位的地址存入寄存器堆
 );
 
 
@@ -68,8 +68,14 @@ assign rd = inst_i[15:11];               //R型指令的目的寄存器
 assign op_fun = inst_i[5:0];             //R型指令的功能码
 assign sa = inst_i[10:6];                //R型指令移位功能的移位量
 
+wire [`InstAddrBus] pc_plus_1;
+wire [`InstAddrBus] pc_plus_2;
+assign pc_plus_1 = pc_i + 1;
+assign pc_plus_2 = pc_i + 2;
+
 reg instvalid;                          //指示指令是否有效
 reg [`RegBus] imm;
+
 
 
 always@(*) begin
@@ -100,6 +106,9 @@ always@(*) begin
         raddr1_o = rs;                  //默认R型指令
         raddr2_o = rt;                  //默认R型指令
         imm = `ZeroWord;
+        branch_flag_o = `JumpDisable;
+        branch_target_addr_o = `NOPRegAddr;
+        next_in_delayslot_o = `IsNotDelaySlot;
 
         case(op)
             `EXE_SPECIAL_INST: begin        //R型指令
@@ -171,33 +180,33 @@ always@(*) begin
                         //跳转
                         `EXE_FUN_JR: begin
                             we_reg_o = `WriteDisable;   //不向寄存器写数据，只是跳转指令行
-                            aluop_o = `EXE_NOP_OP;
-                            alusel_o = `EXE_RES_NOP;
+                            aluop_o = `EXE_JR_OP;
+                            alusel_o = `EXE_RES_JUMP_BRANCH;
                             re1_o = `ReadEnable;
                             re2_o = `ReadDisable;
                             raddr1_o = rs;
                             raddr2_o = `NOPRegAddr;
 
                             branch_flag_o = `JumpEnable;
-                            branch_target_addr_o = rdata1_i;     //跳转目标地址
+                            branch_target_addr_o = rdata1_o;     //跳转目标地址，这里是rdata1_o，不是rdata1_i，可以解决相邻指令间的数据冲突?
                             next_in_delayslot_o = `IsDelaySlot;
                             return_addr_o = `ZeroWord;
                             instvalid = `InstValid;
                         end
                         `EXE_FUN_JALR: begin
                             we_reg_o = `WriteEnable;
-                            aluop_o = `EXE_NOP_OP;
-                            alusel_o = `EXE_RES_NOP;
+                            aluop_o = `EXE_JALR_OP;
+                            alusel_o = `EXE_RES_JUMP_BRANCH;
                             re1_o = `ReadEnable;
                             re2_o = `ReadDisable;
                             raddr1_o = rs;
                             raddr2_o = `NOPRegAddr;
-                            waddr_reg_o = rd;
+                            waddr_reg_o = rd != 5'b00000 ? rd : 5'd31; //rd为0时，写入31号寄存器
 
                             branch_flag_o = `JumpEnable;
-                            branch_target_addr_o = rdata1_i;     //跳转目标地址
+                            branch_target_addr_o = rdata1_o;
                             next_in_delayslot_o = `IsDelaySlot;
-                            return_addr_o = pc_i + 2;
+                            return_addr_o = pc_plus_2;
                             instvalid = `InstValid;
                         end
 
@@ -271,7 +280,7 @@ always@(*) begin
                 waddr_reg_o = rt;
                 instvalid = `InstValid;
             end
-            `EXE_LUT: begin                            //立即数保存 //先不管
+            `EXE_LUT: begin                    //立即数保存
                 we_reg_o = `WriteEnable;
                 aluop_o = `EXE_OR_OP;
                 alusel_o = `EXE_RES_LOGIC;
@@ -285,11 +294,36 @@ always@(*) begin
             end
             //还差pref指令
 
-            // `EXE_J: begin
-            //     branch_flag_o = `JumpEnable;
-            //     branch_target_addr_o = {pc_i[31:28], op_imm, 2'b00}; //跳转目标地址
-            //     instvalid = `InstValid;
-            // end
+            `EXE_J: begin
+                we_reg_o = `WriteDisable;
+                aluop_o = `EXE_JR_OP;
+                alusel_o = `EXE_RES_JUMP_BRANCH;
+                re1_o = `ReadDisable;
+                re2_o = `ReadDisable;
+                // raddr1_o = `NOPRegAddr;  //可以不写
+                // raddr2_o = `NOPRegAddr;
+                // waddr_reg_o = `NOPRegAddr;
+                
+                branch_flag_o = `JumpEnable;
+                branch_target_addr_o = {pc_plus_1[31:28], inst_i[25:0], 2'b00}; //跳转目标地址
+                next_in_delayslot_o = `IsDelaySlot;
+                return_addr_o = `ZeroWord;
+                instvalid = `InstValid;
+            end
+            `EXE_JAL: begin
+                we_reg_o = `WriteEnable;
+                aluop_o = `EXE_JALR_OP;
+                alusel_o = `EXE_RES_JUMP_BRANCH;
+                re1_o = `ReadDisable;
+                re2_o = `ReadDisable;
+                waddr_reg_o = 5'd31; //写入31号寄存器
+                
+                branch_flag_o = `JumpEnable;
+                branch_target_addr_o = {pc_plus_1[31:28], inst_i[25:0], 2'b00}; //跳转目标地址
+                next_in_delayslot_o = `IsDelaySlot;
+                return_addr_o = pc_plus_2;
+                instvalid = `InstValid;
+            end
 
             default : begin //这里赋的默认值具体语句在case语句前
             end

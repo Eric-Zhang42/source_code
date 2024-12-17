@@ -24,8 +24,8 @@
 `define JumpEnable          1'b1            //跳转使能
 `define JumpDisable         1'b0            //跳转禁止
 
-`define IsDelaySlot     1'b1            //是延迟槽
-`define IsNotDelaySlot  1'b0            //不是延迟槽
+`define IsDelaySlot         1'b1            //是延迟槽
+`define IsNotDelaySlot      1'b0            //不是延迟槽
 
 //**************************    具体指令有关宏定义  **********************//
 //指令码部分的宏定义(最前面6位)
@@ -62,19 +62,22 @@
 
 //**************************    与ALU有关的宏定义    **********************//
 //ALUOP部分的宏定义
+`define EXE_NOP_OP          8'b00000000     //?和SLL重复？
 `define EXE_OR_OP           8'b00100101     //都是根据功能吗前加两个0构成
-`define EXE_NOP_OP          8'b00000000
 `define EXE_AND_OP          8'b00100100
 `define EXE_XOR_OP          8'b00100110
 `define EXE_NOR_OP          8'b00100111
 `define EXE_SLL_OP          8'b00000000
 `define EXE_SRL_OP          8'b00000010
 `define EXE_SRA_OP          8'b00000011
+`define EXE_JR_OP           8'b00001000
+`define EXE_JALR_OP         8'b00001001
 
 //ALUSEL部分的宏定义
-`define EXE_RES_LOGIC       3'b001
 `define EXE_RES_NOP         3'b000
+`define EXE_RES_LOGIC       3'b001
 `define EXE_RES_SHIFT       3'b010
+`define EXE_RES_JUMP_BRANCH 3'b011          //可能和其他功能重复，需要改
 
 
 //**************************    与指令存储器ROM有关的宏定义     *****************//

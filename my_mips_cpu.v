@@ -27,7 +27,7 @@ wire id2id_ex__we_reg;
 wire [`RegAddrBus] id2id_ex__waddr_reg;
 wire id2id_ex__now_in_delayslot;
 wire id2id_ex__next_in_delayslot;
-wire [`RegAddrBus] id2id_ex__return_addr;
+wire [`InstAddrBus] id2id_ex__return_addr;
 wire id_ex2id__now_in_delayslot;
 
 
@@ -60,6 +60,9 @@ wire [`RegBus] id_ex2ex__rdata2;
 wire [`RegAddrBus] id_ex2ex__waddr_reg;
 wire id_ex2ex__we_reg;
 
+wire id_ex2ex__now_in_delayslot;
+wire [`InstAddrBus] id_ex2ex__return_addr;
+
 
 //连接ex模块ex/mem模块
 wire ex2ex_mem__we_reg;
@@ -85,7 +88,7 @@ wire [`RegAddrBus] mem_wb2regfile__waddr;
 wire [`RegBus] mem_wb2regfile__wdata;
 
 //连接id与pc模块
-wire [`RegAddrBus] id2pc__branch_target_addr;
+wire [`InstAddrBus] id2pc__branch_target_addr;
 wire id2pc__branch_flag;
 
 //****************************************************************//
@@ -208,6 +211,10 @@ assign mem2id__waddr_reg = ex_mem2mem__waddr_reg;
     .id_rdata2_i(id2id_ex__rdata2),
     .id_waddr_reg_i(id2id_ex__waddr_reg),
     .id_we_reg_i(id2id_ex__we_reg),
+    
+    .id_now_in_delayslot_i(id2id_ex__now_in_delayslot),
+    .id_next_in_delayslot_i(id2id_ex__next_in_delayslot),
+    .id_return_addr_i(id2id_ex__return_addr),
 
     //<-in out->
 
@@ -218,7 +225,8 @@ assign mem2id__waddr_reg = ex_mem2mem__waddr_reg;
     .ex_waddr_reg_o(id_ex2ex__waddr_reg),
     .ex_we_reg_o(id_ex2ex__we_reg),
 
-    .now_in_delayslot_o(id_ex2id__now_in_delayslot)
+    .now_in_delayslot_o(id_ex2id__now_in_delayslot),
+    .ex_return_addr_o(id_ex2ex__return_addr)
 );
 
 
@@ -232,6 +240,8 @@ assign mem2id__waddr_reg = ex_mem2mem__waddr_reg;
     .rdata2_i(id_ex2ex__rdata2),
     .waddr_reg_i(id_ex2ex__waddr_reg),
     .we_reg_i(id_ex2ex__we_reg),
+    .now_in_delayslot_i(id_ex2ex__now_in_delayslot),
+    .return_addr_i(id_ex2ex__return_addr),
     
     .waddr_reg_o(ex2ex_mem__waddr_reg),
     .we_reg_o(ex2ex_mem__we_reg),

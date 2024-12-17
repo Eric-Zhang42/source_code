@@ -25,13 +25,13 @@ end
 //pc程序计数器
 always@(posedge clk) begin
     if(ce == `ChipDisable) begin
-        pc <= 32'h00000000;                     //复位时，pc归零
+        pc <= `ZeroWord;                        //复位时，pc归零
     end
     else if(branch_flag_i == `JumpEnable)begin
         pc <= branch_target_addr_i;             //跳转时，pc赋值为跳转目标地址
     end
     else begin
-        pc <= pc + 1;                        //正常工作时，时钟有效沿到来pc+4
+        pc <= pc + 1;                           //正常工作时，时钟有效沿到来pc+4
     end
 end
 
