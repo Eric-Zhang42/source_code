@@ -219,7 +219,7 @@ always@(*) begin
                             branch_flag_o = `JumpEnable;
                             branch_target_addr_o = rdata1_o;
                             next_in_delayslot_o = `IsDelaySlot;
-                            return_addr_o = pc_plus_2;
+                            return_addr_o = pc_plus_1;
                             instvalid = `InstValid;
                             stallreq_upstream_o = `Stop;
                         end
@@ -324,6 +324,7 @@ always@(*) begin
                 next_in_delayslot_o = `IsDelaySlot;
                 return_addr_o = `ZeroWord;
                 instvalid = `InstValid;
+                stallreq_upstream_o = `Stop;
             end
             `EXE_JAL: begin
                 we_reg_o = `WriteEnable;
@@ -336,8 +337,9 @@ always@(*) begin
                 branch_flag_o = `JumpEnable;
                 branch_target_addr_o = {6'b000000, inst_i[25:0]}; //跳转目标地址
                 next_in_delayslot_o = `IsDelaySlot;
-                return_addr_o = pc_plus_2;
+                return_addr_o = pc_plus_1;
                 instvalid = `InstValid;
+                stallreq_upstream_o = `Stop;
             end
 
             default : begin //这里赋的默认值具体语句在case语句前

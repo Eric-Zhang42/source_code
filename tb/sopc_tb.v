@@ -12,7 +12,7 @@ initial begin
     rst = 1;
     #30
     rst = 0;
-    #250
+    #600
     $finish;
 end
 
