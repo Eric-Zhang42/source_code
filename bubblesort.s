@@ -9,12 +9,12 @@
 .globl main
 main:
     # 提示用户输入元素个数
-    li $v0, 4
+    li $v0, 4           # 4表示输出字符串？？？，这个就是lut？
     la $a0, prompt
     syscall
 
     # 读取元素个数
-    li $v0, 5
+    li $v0, 5           # 5表示读取整数？？
     syscall
     move $s0, $v0  # $s0存储元素个数
 

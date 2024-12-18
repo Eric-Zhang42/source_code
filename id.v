@@ -65,7 +65,7 @@ wire [5:0] op_fun;                      //功能码
 wire [`RegAddrBus] rs, rt, rd;          //源地址寄存器，目的地址寄存器
 wire [5:0] sa;                          //移位量
 wire [15:0] op_imm;                     //立即数
-wire op_imm_expand_32bits;                 //立即数左移16位
+wire [31:0] op_imm_expand_32bits;                 //立即数左移16位
 
 assign op = inst_i[31:26];               //指令码，用于规定指令的类型
 assign rs = inst_i[25:21];               //I型指令的源寄存器
@@ -355,7 +355,7 @@ always@(*) begin
                 instvalid = `InstValid;
                 if(rdata1_o == rdata2_o)begin               //用radata1_o, 不用rdata1_i，可以解决数据冲突
                     branch_flag_o = `JumpEnable;
-                    branch_target_addr_o = op_imm_expand_32bits + pc_plus_1;
+                    branch_target_addr_o = op_imm_expand_32bits + pc_i;
                     return_addr_o = pc_plus_1;
                     stallreq_upstream_o = `Stop;
                 end
@@ -374,7 +374,7 @@ always@(*) begin
                 instvalid = `InstValid;
                 if(rdata1_o != rdata2_o)begin
                     branch_flag_o = `JumpEnable;
-                    branch_target_addr_o = op_imm_expand_32bits + pc_plus_1;
+                    branch_target_addr_o = op_imm_expand_32bits + pc_i;
                     return_addr_o = pc_plus_1;
                     stallreq_upstream_o = `Stop;
                 end
@@ -393,7 +393,7 @@ always@(*) begin
                 instvalid = `InstValid;
                 if(rdata1_o[31] == 1'b1 || rdata1_o == `ZeroWord)begin
                     branch_flag_o = `JumpEnable;
-                    branch_target_addr_o = op_imm_expand_32bits + pc_plus_1;
+                    branch_target_addr_o = op_imm_expand_32bits + pc_i;
                     return_addr_o = pc_plus_1;
                     stallreq_upstream_o = `Stop;
                 end
@@ -412,7 +412,7 @@ always@(*) begin
                 instvalid = `InstValid;
                 if(rdata1_o[31] == 1'b0 && rdata1_o != `ZeroWord)begin
                     branch_flag_o = `JumpEnable;
-                    branch_target_addr_o = op_imm_expand_32bits + pc_plus_1;
+                    branch_target_addr_o = op_imm_expand_32bits + pc_i;
                     return_addr_o = pc_plus_1;
                     stallreq_upstream_o = `Stop;
                 end
@@ -433,7 +433,7 @@ always@(*) begin
                         instvalid = `InstValid;
                         if(rdata1_o[31] == 1'b1)begin
                             branch_flag_o = `JumpEnable;
-                            branch_target_addr_o = op_imm_expand_32bits + pc_plus_1;
+                            branch_target_addr_o = op_imm_expand_32bits + pc_i;
                             return_addr_o = pc_plus_1;
                             stallreq_upstream_o = `Stop;
                         end
@@ -452,7 +452,7 @@ always@(*) begin
                         instvalid = `InstValid;
                         if(rdata1_o[31] == 1'b0)begin
                             branch_flag_o = `JumpEnable;
-                            branch_target_addr_o = op_imm_expand_32bits + pc_plus_1;
+                            branch_target_addr_o = op_imm_expand_32bits + pc_i;
                             return_addr_o = pc_plus_1;
                             stallreq_upstream_o = `Stop;
                         end
@@ -471,7 +471,7 @@ always@(*) begin
                         instvalid = `InstValid;
                         if(rdata1_o[31] == 1'b1)begin
                             branch_flag_o = `JumpEnable;
-                            branch_target_addr_o = op_imm_expand_32bits + pc_plus_1;
+                            branch_target_addr_o = op_imm_expand_32bits + pc_i;
                             return_addr_o = pc_plus_1;
                             stallreq_upstream_o = `Stop;
                         end
@@ -490,7 +490,7 @@ always@(*) begin
                         instvalid = `InstValid;
                         if(rdata1_o[31] == 1'b0)begin
                             branch_flag_o = `JumpEnable;
-                            branch_target_addr_o = op_imm_expand_32bits + pc_plus_1;
+                            branch_target_addr_o = op_imm_expand_32bits + pc_i;
                             return_addr_o = pc_plus_1;
                             stallreq_upstream_o = `Stop;
                         end
