@@ -45,6 +45,18 @@
 `define EXE_J               6'b000010       //跳转指令码
 `define EXE_JAL             6'b000011       //跳转并链接jal指令码
 
+//分支指令码
+`define EXE_BEQ             6'b000100       //分支相等beq指令码
+`define EXE_BNE             6'b000101       //分支不等bne指令码
+`define EXE_BLEZ            6'b000110       //分支小于等于blez指令码
+`define EXE_BGTZ            6'b000111       //分支大于bgz指令码
+`define EXE_REGIMM          6'b000001       //剩余分支指令码
+    //EXE_REGIMM的rt码
+    `define EXE_BLTZ            5'b00000        //分支小于bltz指令码
+    `define EXE_BGEZ            5'b00001        //分支大于等于bgez指令码
+    `define EXE_BLTZAL          5'b10000        //分支小于bltzal指令码
+    `define EXE_BGEZAL          5'b10001        //分支大于等于bgezal指令码
+
 //功能码部分的宏定义(最后6位)
 `define EXE_FUN_AND         6'b100100       //and指令功能码
 `define EXE_FUN_OR          6'b100101       //or指令功能码
