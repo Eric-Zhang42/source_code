@@ -57,6 +57,16 @@
     `define EXE_BLTZAL          5'b10000        //分支小于bltzal指令码
     `define EXE_BGEZAL          5'b10001        //分支大于等于bgezal指令码
 
+//加载存储指令码
+`define EXE_LB              6'b100000       //加载lb指令码
+`define EXE_LBU             6'b100100       //加载lbu指令码
+`define EXE_LH              6'b100001       //加载lh指令码
+`define EXE_LHU             6'b100101       //加载lhu指令码
+`define EXE_LW              6'b100011       //加载lw指令码
+`define EXE_SB              6'b101000       //存储sb指令码
+`define EXE_SH              6'b101001       //存储sh指令码
+`define EXE_SW              6'b101011       //存储sw指令码
+
 //功能码部分的宏定义(最后6位)
 `define EXE_FUN_AND         6'b100100       //and指令功能码
 `define EXE_FUN_OR          6'b100101       //or指令功能码
@@ -100,6 +110,13 @@
 `define InstBus             31:0            //ROM的数据总线宽度(字长32 width)
 `define InstMenNum          1023            //ROM的字数1023 (depth)
 `define InstMemNumLog2      10              //ROM实际使用的地址线宽度
+
+//**************************    与数据存储器RAM有关的宏定义     *****************//
+`define DataAddrBus         31:0            //RAM的地址总线宽度(假的，其实是17位不是32位，只是为了方便)
+`define DataBus             31:0            //RAM的数据总线宽度
+`define DataMemNum          131071          //RAM的字数131071 (depth), =128K
+`define DataMemNumLog2      17              //RAM实际使用的地址线宽度
+`define ByteWidth           7:0             //一个字节的宽度
 
 //*************************     与通用寄存器regs有关的宏定义    *******************//
 `define RegAddrBus          4:0             //Regs模块的地址线宽度
