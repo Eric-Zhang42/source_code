@@ -4,8 +4,15 @@ module my_mips_cpu(
     input rst,
     input clk,
     input wire[`RegBus] rom_data_i,
+    input wire[`DataBus] ram_data_i,
+
     output wire[`RegBus] rom_addr_o,
-    output rom_ce_o
+    output rom_ce_o,
+    output wire[`DataAddrBus] ram_addr_o,
+    output wire[`DataBus] ram_data_o,
+    output wire ram_we_o,
+    output wire [`SelBus] ram_sel_o,
+    output wire ram_ce_o
 );
 
 //****************************************************************//

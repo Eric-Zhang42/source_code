@@ -2,10 +2,10 @@
 
 module ram_program(
     input clk,
-    input wire [3:0] sel,
+    input wire [`SelBus] sel,
 
-    input wire ram_ce_i,
-    input wire ram_we_i,
+    input wire ram_ce_i,        //读写使能
+    input wire ram_we_i,        //写使能
     input wire[`DataAddrBus] ram_addr_i,
     input wire [`DataBus] ram_data_i,
 

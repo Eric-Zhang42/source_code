@@ -95,8 +95,18 @@
 `define EXE_SLL_OP          8'b00000000
 `define EXE_SRL_OP          8'b00000010
 `define EXE_SRA_OP          8'b00000011
+
 `define EXE_JR_OP           8'b00001000
 `define EXE_JALR_OP         8'b00001001
+
+`define EXE_LB_OP           8'b00010000
+`define EXE_LBU_OP          8'b00010001
+`define EXE_LH_OP           8'b00010010
+`define EXE_LHU_OP          8'b00010011
+`define EXE_LW_OP           8'b00010100
+`define EXE_SB_OP           8'b00011000
+`define EXE_SH_OP           8'b00011001
+`define EXE_SW_OP           8'b00011010
 
 //ALUSEL部分的宏定义
 `define EXE_RES_NOP         3'b000
@@ -117,6 +127,8 @@
 `define DataMemNum          131071          //RAM的字数131071 (depth), =128K
 `define DataMemNumLog2      17              //RAM实际使用的地址线宽度
 `define ByteWidth           7:0             //一个字节的宽度
+`define AluOpBus            7:0             //ALU的操作码宽度
+`define SelBus              3:0             //RAM的选择信号宽度
 
 //*************************     与通用寄存器regs有关的宏定义    *******************//
 `define RegAddrBus          4:0             //Regs模块的地址线宽度
