@@ -36,6 +36,7 @@ wire id2id_ex__now_in_delayslot;
 wire id2id_ex__next_in_delayslot;
 wire [`InstAddrBus] id2id_ex__return_addr;
 wire id_ex2id__now_in_delayslot;
+wire [`InstBus]id2id_ex__inst;
 
 
 //连接ex模块与id模块
@@ -70,17 +71,25 @@ wire id_ex2ex__we_reg;
 wire id_ex2ex__now_in_delayslot;
 wire [`InstAddrBus] id_ex2ex__return_addr;
 
+wire [`InstAddrBus]id_ex2ex__inst;
+
 
 //连接ex模块ex/mem模块
 wire ex2ex_mem__we_reg;
 wire [`RegAddrBus] ex2ex_mem__waddr_reg;
 wire [`RegBus] ex2ex_mem__wdata;
+wire [`AluOpBus] ex2ex_mem__aluop;
+wire [`DataAddrBus] ex2ex_mem__mem_addr;
+wire [`RegBus] ex2ex_mem__reg2;
 
 
 //连接ex/mem与mem模块
 wire ex_mem2mem__we_reg;
 wire [`RegAddrBus] ex_mem2mem__waddr_reg;
 wire [`RegBus] ex_mem2mem__wdata;
+wire [`AluOpBus] ex_mem2mem__aluop;
+wire [`DataAddrBus] ex_mem2mem__mem_addr;
+wire [`RegBus] ex_mem2mem__reg2;
 
 
 //连接mem模块与mem/wb模块
@@ -188,7 +197,8 @@ assign rom_addr_o = pc;
     .return_addr_o(id2id_ex__return_addr),
     //暂停请求
     .stallreq_downstream_o(stallreq_downstream_from_id),
-    .stallreq_upstream_o(stallreq_upstream_from_id)
+    .stallreq_upstream_o(stallreq_upstream_from_id),
+    .inst_o(id2id_ex__inst)
 );
 
 
@@ -235,6 +245,7 @@ assign mem2id__waddr_reg = ex_mem2mem__waddr_reg;
     .id_next_in_delayslot_i(id2id_ex__next_in_delayslot),
     .id_return_addr_i(id2id_ex__return_addr),
     .stall(stall),
+    .id_inst_i(id2id_ex__inst),
 
     //<-in out->
 
@@ -246,7 +257,8 @@ assign mem2id__waddr_reg = ex_mem2mem__waddr_reg;
     .ex_we_reg_o(id_ex2ex__we_reg),
 
     .now_in_delayslot_o(id_ex2id__now_in_delayslot),
-    .ex_return_addr_o(id_ex2ex__return_addr)
+    .ex_return_addr_o(id_ex2ex__return_addr),
+    .ex_inst_o(id_ex2ex__inst)
 );
 
 
@@ -262,13 +274,17 @@ assign mem2id__waddr_reg = ex_mem2mem__waddr_reg;
     .we_reg_i(id_ex2ex__we_reg),
     .now_in_delayslot_i(id_ex2ex__now_in_delayslot),
     .return_addr_i(id_ex2ex__return_addr),
+    .inst_i(id_ex2ex__inst),
     
     // <-in out->
 
     .waddr_reg_o(ex2ex_mem__waddr_reg),
     .we_reg_o(ex2ex_mem__we_reg),
     .wdata_o(ex2ex_mem__wdata),
-    .stallreq_o(stallreq_from_ex)
+    .stallreq_o(stallreq_from_ex),
+    .aluop_o(ex2ex_mem__aluop),
+    .mem_addr_o(ex2ex_mem__mem_addr),
+    .reg2_o(ex2ex_mem__reg2)
 );
 
 
@@ -280,10 +296,17 @@ assign mem2id__waddr_reg = ex_mem2mem__waddr_reg;
     .ex_we_reg_i(ex2ex_mem__we_reg),
     .ex_wdata_i(ex2ex_mem__wdata),
     .stall(stall),
+    .ex_aluop_i(ex2ex_mem__aluop),
+    .ex_mem_addr_i(ex2ex_mem__mem_addr),
+    .ex_reg2_i(ex2ex_mem__reg2),
+
     // <-in out->
     .mem_waddr_reg_o(ex_mem2mem__waddr_reg),
     .mem_we_reg_o(ex_mem2mem__we_reg),
-    .mem_wdata_o(ex_mem2mem__wdata)
+    .mem_wdata_o(ex_mem2mem__wdata),
+    .mem_aluop_o(ex_mem2mem__aluop),
+    .mem_mem_addr_o(ex_mem2mem__mem_addr),
+    .mem_reg2_o(ex_mem2mem__reg2)
 );
 
 
@@ -293,10 +316,19 @@ assign mem2id__waddr_reg = ex_mem2mem__waddr_reg;
     .waddr_reg_i(ex_mem2mem__waddr_reg),
     .we_reg_i(ex_mem2mem__we_reg),
     .wdata_i(ex_mem2mem__wdata),
+    .aluop_i(ex_mem2mem__aluop),
+    .mem_addr_i(ex_mem2mem__mem_addr),
+    .reg2_i(ex_mem2mem__reg2),
+    .mem_data_i(ram_data_i),
     // <-in out->
     .waddr_reg_o(mem2mem_wb__waddr_reg),
     .we_reg_o(mem2mem_wb__we_reg),
-    .wdata_o(mem2mem_wb__wdata)
+    .wdata_o(mem2mem_wb__wdata),
+    .mem_addr_o(ram_addr_o),
+    .mem_data_o(ram_data_o),
+    .mem_sel_o(ram_sel_o),
+    .mem_ce_o(ram_ce_o),
+    .mem_we_o(ram_we_o)
 );
 
 

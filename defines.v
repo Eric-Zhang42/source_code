@@ -39,7 +39,7 @@
 `define EXE_ANDI            6'b001100       //立即数与andi指令码
 `define EXE_ORI             6'b001101       //立即数或ori指令码
 `define EXE_XORI            6'b001110       //立即数异或xori指令码
-`define EXE_LUT             6'b001111       //立即数保存lut指令码
+`define EXE_LUI             6'b001111       //立即数保存lut指令码
 
 //跳转指令码
 `define EXE_J               6'b000010       //跳转指令码
@@ -99,21 +99,25 @@
 `define EXE_JR_OP           8'b00001000
 `define EXE_JALR_OP         8'b00001001
 
-`define EXE_LB_OP           8'b00010000
-`define EXE_LBU_OP          8'b00010001
-`define EXE_LH_OP           8'b00010010
-`define EXE_LHU_OP          8'b00010011
-`define EXE_LW_OP           8'b00010100
-`define EXE_SB_OP           8'b00011000
-`define EXE_SH_OP           8'b00011001
-`define EXE_SW_OP           8'b00011010
-
 //ALUSEL部分的宏定义
 `define EXE_RES_NOP         3'b000
 `define EXE_RES_LOGIC       3'b001
 `define EXE_RES_SHIFT       3'b010
 `define EXE_RES_JUMP_BRANCH 3'b011          //可能和其他功能重复，需要改
+`define EXE_RES_LOAD_STORE  3'b100          //可能和其他功能重复，需要改
 
+//**************************    与访存阶段有关的宏定义    **********************//
+`define AluOpBus            7:0             //ALU的操作码宽度
+`define SelBus              3:0             //RAM的选择信号宽度
+//访存阶段的操作码，与加载和存储有关
+`define MEM_LB_OP           8'b00010000
+`define MEM_LBU_OP          8'b00010001
+`define MEM_LH_OP           8'b00010010
+`define MEM_LHU_OP          8'b00010011
+`define MEM_LW_OP           8'b00010100
+`define MEM_SB_OP           8'b00011000
+`define MEM_SH_OP           8'b00011001
+`define MEM_SW_OP           8'b00011010
 
 //**************************    与指令存储器ROM有关的宏定义     *****************//
 `define InstAddrBus         31:0            //ROM的地址总线宽度
@@ -127,8 +131,6 @@
 `define DataMemNum          131071          //RAM的字数131071 (depth), =128K
 `define DataMemNumLog2      17              //RAM实际使用的地址线宽度
 `define ByteWidth           7:0             //一个字节的宽度
-`define AluOpBus            7:0             //ALU的操作码宽度
-`define SelBus              3:0             //RAM的选择信号宽度
 
 //*************************     与通用寄存器regs有关的宏定义    *******************//
 `define RegAddrBus          4:0             //Regs模块的地址线宽度

@@ -42,12 +42,12 @@ rom_program rom_program_inst0(
 );
 
 //ÊµÀý»¯RAM
-ram_data ram_data_inst0(
+ram_program ram_data_inst0(
     .clk(clk),
     .ram_addr_i(data_addr),
     .ram_data_i(cpu2ram__data),
     .ram_we_i(ram_we),
-    .ram_sel_i(ram_sel),
+    .sel(ram_sel),
     .ram_ce_i(ram_ce),
     //<-in out->
     .ram_data_o(ram2cpu__data)

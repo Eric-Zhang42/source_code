@@ -20,6 +20,8 @@ module id_ex(
     //暂停信号
     input wire[`StallBus] stall,
 
+    input wire [`InstBus] id_inst_i,  //译码阶段指令
+
     //给执行阶段信息
     output reg[`AluOpBus] ex_aluop_o,
     output reg[`AluSelBus] ex_alusel_o,
@@ -32,7 +34,9 @@ module id_ex(
     output reg [`InstAddrBus] ex_return_addr_o,        //返回地址
 
     //返回给译码阶段信息
-    output reg now_in_delayslot_o       //当前指令是否是延迟槽指令，返回给译码阶段
+    output reg now_in_delayslot_o,       //当前指令是否是延迟槽指令，返回给译码阶段
+
+    output reg[`InstBus] ex_inst_o
 
 );
 
@@ -48,6 +52,7 @@ always@(posedge clk) begin
         ex_return_addr_o <= `ZeroWord;
         ex_now_in_delayslot_o <= `IsNotDelaySlot;
         now_in_delayslot_o <= `IsNotDelaySlot;
+        ex_inst_o <= `ZeroWord;
     end
     else if(stall[2] == `Stop) begin        //执行阶段暂停
         if(stall[3] == `NoStop)begin        //若译码阶段不暂停
@@ -61,6 +66,7 @@ always@(posedge clk) begin
             ex_return_addr_o <= `ZeroWord;
             ex_now_in_delayslot_o <= `IsNotDelaySlot;
             now_in_delayslot_o <= `IsNotDelaySlot;
+            ex_inst_o <= `ZeroWord;
         end
         else begin                          //若译码阶段暂停
             ex_aluop_o <= ex_aluop_o;
@@ -72,6 +78,7 @@ always@(posedge clk) begin
 
             ex_return_addr_o <= ex_return_addr_o;
             ex_now_in_delayslot_o <= ex_now_in_delayslot_o;
+            ex_inst_o <= ex_inst_o;
         end
     end
     else begin                          //正常工作传递
@@ -85,6 +92,7 @@ always@(posedge clk) begin
         ex_return_addr_o <= id_return_addr_i;
         ex_now_in_delayslot_o <= id_now_in_delayslot_i;     //传递给执行阶段
         now_in_delayslot_o <= id_next_in_delayslot_i;       //返回给译码阶段
+        ex_inst_o <= id_inst_i;
     end
 end
 

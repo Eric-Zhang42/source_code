@@ -14,13 +14,18 @@ module ex(
     input wire now_in_delayslot_i,                  //当前指令是否是延迟槽指令
     input wire [`InstAddrBus] return_addr_i,         //返回地址
 
+    input wire [`InstBus] inst_i,                   //指令
+
     //执行后结果
     output reg[`RegAddrBus] waddr_reg_o,            //写目标寄存器地址
     output reg we_reg_o,                            //写使能信号
     output reg[`RegBus] wdata_o,                     //处理后的数据
 
-    output reg stallreq_o                           //暂停请求信号
+    output reg stallreq_o,                           //暂停请求信号
 
+    output wire [`AluOpBus] aluop_o,
+    output wire [`DataAddrBus] mem_addr_o,
+    output wire [`DataBus] reg2_o
 );
 
 //保存逻辑运算的结果
@@ -113,6 +118,13 @@ always @(*)begin
         stallreq_o = `NoStop;
     end
 end
+
+//加载和存储指令：
+wire [15:0] offset;
+assign offset = inst_i[15:0];    //取出指令的offset部分
+assign aluop_o = aluop_i;        //传递给mem模块
+assign mem_addr_o = {{16{offset[15]}}, offset} + rdata1_i;
+assign reg2_o = rdata2_i;
 
 endmodule
 

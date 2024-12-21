@@ -12,7 +12,7 @@ module mem(
     input wire[`DataAddrBus] mem_addr_i,
     input wire [`AluOpBus]aluop_i,      //8bits
     input wire [`DataBus]mem_data_i,
-    input wire [`RegBus]reg2_i,                                //这里`RegBus 和 `DataBus 其实是一样的
+    input wire [`RegBus]reg2_i,         //叫reg是因为数据来自于寄存器堆，这里`RegBus 和 `DataBus 其实是一样的
 
     //访存后结果
     output reg[`RegAddrBus] waddr_reg_o,
@@ -51,7 +51,7 @@ always@(*)begin     //与reg和ram交互
         mem_data_o = `ZeroWord;
         mem_sel_o = 4'b1111;        //默认读写整个字4Byte
         case (aluop_i)
-            `EXE_LB_OP:begin
+            `MEM_LB_OP:begin
                 mem_ce_o = `ChipEnable;
                 mem_we_o = `WriteDisable;
                 mem_addr_o = mem_addr_i;
@@ -75,7 +75,7 @@ always@(*)begin     //与reg和ram交互
                     default:wdata_o = `ZeroWord;   //这里理论是不会执行的
                 endcase
             end
-            `EXE_LBU_OP:begin
+            `MEM_LBU_OP:begin
                 mem_ce_o = `ChipEnable;
                 mem_we_o = `WriteDisable;
                 mem_addr_o = mem_addr_i;
@@ -99,7 +99,7 @@ always@(*)begin     //与reg和ram交互
                     default:wdata_o = `ZeroWord;   //这里理论是不会执行的
                 endcase
             end
-            `EXE_LH_OP:begin
+            `MEM_LH_OP:begin
                 mem_ce_o = `ChipEnable;
                 mem_we_o = `WriteDisable;
                 mem_addr_o = mem_addr_i;
@@ -115,7 +115,7 @@ always@(*)begin     //与reg和ram交互
                     default:wdata_o = `ZeroWord;   //这里理论是不会执行的
                 endcase
             end
-            `EXE_LHU_OP:begin
+            `MEM_LHU_OP:begin
                 mem_ce_o = `ChipEnable;
                 mem_we_o = `WriteDisable;
                 mem_addr_o = mem_addr_i;
@@ -131,13 +131,13 @@ always@(*)begin     //与reg和ram交互
                     default:wdata_o = `ZeroWord;   //这里理论是不会执行的
                 endcase
             end
-            `EXE_LW_OP:begin
+            `MEM_LW_OP:begin
                 mem_ce_o = `ChipEnable;
                 mem_we_o = `WriteDisable;
                 mem_addr_o = mem_addr_i;
                 mem_sel_o = 4'b1111;
             end
-            `EXE_SB_OP:begin
+            `MEM_SB_OP:begin
                 mem_addr_o = mem_addr_i;
                 mem_ce_o = `ChipEnable;
                 mem_we_o = `WriteEnable;
@@ -150,7 +150,7 @@ always@(*)begin     //与reg和ram交互
                     default:mem_sel_o = 4'b0000;    //这里理论是不会执行的
                 endcase
             end
-            `EXE_SH_OP:begin
+            `MEM_SH_OP:begin
                 mem_addr_o = mem_addr_i;
                 mem_ce_o = `ChipEnable;
                 mem_we_o = `WriteEnable;
@@ -161,7 +161,7 @@ always@(*)begin     //与reg和ram交互
                     default:mem_sel_o = 4'b0000;    //这里理论是不会执行的
                 endcase
             end
-            `EXE_SW_OP:begin
+            `MEM_SW_OP:begin
                 mem_addr_o = mem_addr_i;
                 mem_sel_o = 4'b1111;
                 mem_ce_o = `ChipEnable;

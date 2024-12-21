@@ -54,8 +54,10 @@ module id( //功能：在给指令解码的同时，取两个操作数送给下一级执行阶段
 
     //暂停请求信号
     output reg stallreq_upstream_o,                         //请求暂停上游信号
-    output reg stallreq_downstream_o                        //请求暂停下游信号
+    output reg stallreq_downstream_o,                        //请求暂停下游信号
     
+    //加载和存储指令时
+    output wire [`InstBus] inst_o
 );
 
 
@@ -66,6 +68,7 @@ wire [`RegAddrBus] rs, rt, rd;          //源地址寄存器，目的地址寄存器
 wire [5:0] sa;                          //移位量
 wire [15:0] op_imm;                     //立即数
 wire [31:0] op_imm_expand_32bits;                 //立即数左移16位
+wire [5:0] base;                        //基址寄存器
 
 assign op = inst_i[31:26];               //指令码，用于规定指令的类型
 assign rs = inst_i[25:21];               //I型指令的源寄存器
@@ -77,6 +80,8 @@ assign rd = inst_i[15:11];               //R型指令的目的寄存器
 assign op_fun = inst_i[5:0];             //R型指令的功能码
 assign sa = inst_i[10:6];                //R型指令移位功能的移位量
 
+assign base = inst_i[25:21];             //基址寄存器
+
 wire [`InstAddrBus] pc_plus_1;
 wire [`InstAddrBus] pc_plus_2;
 assign pc_plus_1 = pc_i + 1;
@@ -84,6 +89,8 @@ assign pc_plus_2 = pc_i + 2;
 
 reg instvalid;                          //指示指令是否有效
 reg [`RegBus] imm;
+
+assign inst_o = inst_i;                 //向后传递指令
 
 
 always@(*) begin
@@ -296,7 +303,7 @@ always@(*) begin
                 waddr_reg_o = rt;
                 instvalid = `InstValid;
             end
-            `EXE_LUT: begin                    //立即数保存
+            `EXE_LUI: begin                    //立即数保存
                 we_reg_o = `WriteEnable;
                 aluop_o = `EXE_OR_OP;
                 alusel_o = `EXE_RES_LOGIC;
@@ -499,7 +506,96 @@ always@(*) begin
                     end
                 endcase
             end //end of case EXE_REGIMM
-
+            `EXE_LB: begin
+                we_reg_o = `WriteEnable;
+                aluop_o = `MEM_LB_OP;
+                alusel_o = `EXE_RES_LOAD_STORE;
+                re1_o = `ReadEnable;
+                re2_o = `ReadDisable;
+                raddr1_o = base;
+                waddr_reg_o = rt;
+                instvalid = `InstValid;
+            end
+            `EXE_LBU: begin
+                we_reg_o = `WriteEnable;
+                aluop_o = `MEM_LBU_OP;
+                alusel_o = `EXE_RES_LOAD_STORE;
+                re1_o = `ReadEnable;
+                re2_o = `ReadDisable;
+                raddr1_o = base;
+                waddr_reg_o = rt;
+                instvalid = `InstValid;
+            end
+            `EXE_LH: begin
+                we_reg_o = `WriteEnable;
+                aluop_o = `MEM_LH_OP;
+                alusel_o = `EXE_RES_LOAD_STORE;
+                re1_o = `ReadEnable;
+                re2_o = `ReadDisable;
+                raddr1_o = base;
+                waddr_reg_o = rt;
+                instvalid = `InstValid;
+            end
+            `EXE_LHU: begin
+                we_reg_o = `WriteEnable;
+                aluop_o = `MEM_LHU_OP;
+                alusel_o = `EXE_RES_LOAD_STORE;
+                re1_o = `ReadEnable;
+                re2_o = `ReadDisable;
+                raddr1_o = base;
+                waddr_reg_o = rt;
+                instvalid = `InstValid;
+            end
+            `EXE_LW: begin
+                we_reg_o = `WriteEnable;
+                aluop_o = `MEM_LW_OP;
+                alusel_o = `EXE_RES_LOAD_STORE;
+                re1_o = `ReadEnable;
+                re2_o = `ReadDisable;
+                raddr1_o = base;
+                waddr_reg_o = rt;
+                instvalid = `InstValid;
+            end
+            `EXE_SB: begin
+                we_reg_o = `WriteDisable;
+                aluop_o = `MEM_SB_OP;
+                alusel_o = `EXE_RES_LOAD_STORE;
+                re1_o = `ReadEnable;
+                re2_o = `ReadEnable;
+                raddr1_o = base;
+                raddr2_o = rt;
+                instvalid = `InstValid;
+            end
+            `EXE_SB: begin
+                we_reg_o = `WriteDisable;
+                aluop_o = `MEM_SB_OP;
+                alusel_o = `EXE_RES_LOAD_STORE;
+                re1_o = `ReadEnable;
+                re2_o = `ReadEnable;
+                raddr1_o = base;
+                raddr2_o = rt;
+                instvalid = `InstValid;
+            end
+            `EXE_SH: begin
+                we_reg_o = `WriteDisable;
+                aluop_o = `MEM_SH_OP;
+                alusel_o = `EXE_RES_LOAD_STORE;
+                re1_o = `ReadEnable;
+                re2_o = `ReadEnable;
+                raddr1_o = base;
+                raddr2_o = rt;
+                instvalid = `InstValid;
+            end
+            `EXE_SW: begin
+                we_reg_o = `WriteDisable;
+                aluop_o = `MEM_SW_OP;
+                alusel_o = `EXE_RES_LOAD_STORE;
+                re1_o = `ReadEnable;
+                re2_o = `ReadEnable;
+                raddr1_o = base;
+                raddr2_o = rt;
+                instvalid = `InstValid;
+            end
             default : begin //这里赋的默认值具体语句在case语句前
             end
             
