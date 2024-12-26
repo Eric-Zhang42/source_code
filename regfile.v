@@ -16,7 +16,10 @@ module regfile(
     input wire[`RegAddrBus] raddr1,                 //端口1读目标寄存器地址
     input wire[`RegAddrBus] raddr2,                 //端口2读目标寄存器地址
     output reg[`RegBus] rdata1,                     //端口1读到的寄存器数据
-    output reg[`RegBus] rdata2                      //端口2读到的寄存器数据
+    output reg[`RegBus] rdata2,                     //端口2读到的寄存器数据
+
+    input wire in,
+    output wire out
 );
 
 //定义32个32位寄存器
@@ -76,6 +79,7 @@ always@(*) begin
     end
 end
 
+assign out = regs[3][0];
 
 endmodule
 /*

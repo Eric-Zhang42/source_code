@@ -92,15 +92,6 @@ always@(*) begin
             `EXE_XOR_OP: begin                                  //“ÏªÚ‘ÀÀ„
                 logicout = rdata1_i ^ rdata2_i;
             end
-            `EXE_SLL_OP: begin
-                shiftres = (rdata2_i << rdata1_i[4:0]);
-            end
-            `EXE_SRL_OP: begin
-                shiftres = (rdata2_i >> rdata1_i[4:0]);
-            end
-            `EXE_SRA_OP: begin
-                shiftres = ({32{rdata2_i[31]}}<<(6'd32-{1'b0,rdata1_i[4:0]})) | rdata2_i >> rdata1_i[4:0]; 
-            end
             default: begin
                 logicout = `ZeroWord;
             end

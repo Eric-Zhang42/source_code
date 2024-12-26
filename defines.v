@@ -57,6 +57,16 @@
     `define EXE_BLTZAL          5'b10000        //分支小于bltzal指令码
     `define EXE_BGEZAL          5'b10001        //分支大于等于bgezal指令码
 
+//加载存储指令码
+`define EXE_LB              6'b100000       //加载lb指令码
+`define EXE_LBU             6'b100100       //加载lbu指令码
+`define EXE_LH              6'b100001       //加载lh指令码
+`define EXE_LHU             6'b100101       //加载lhu指令码
+`define EXE_LW              6'b100011       //加载lw指令码
+`define EXE_SB              6'b101000       //存储sb指令码
+`define EXE_SH              6'b101001       //存储sh指令码
+`define EXE_SW              6'b101011       //存储sw指令码
+
 //功能码部分的宏定义(最后6位)
 `define EXE_FUN_AND         6'b100100       //and指令功能码
 `define EXE_FUN_OR          6'b100101       //or指令功能码
@@ -108,12 +118,34 @@
 `define EXE_RES_SHIFT       3'b010
 `define EXE_RES_JUMP_BRANCH 3'b011          //可能和其他功能重复，需要改
 `define EXE_RES_MOVE        3'b100
+`define EXE_RES_LOAD_STORE  3'b101          //可能和其他功能重复，需要改
+
+//**************************    与访存阶段有关的宏定义    **********************//
+`define AluOpBus            7:0             //ALU的操作码宽度
+`define SelBus              3:0             //RAM的选择信号宽度
+//访存阶段的操作码，与加载和存储有关
+`define MEM_LB_OP           8'b00010000
+`define MEM_LBU_OP          8'b00010001
+`define MEM_LH_OP           8'b00010010
+`define MEM_LHU_OP          8'b00010011
+`define MEM_LW_OP           8'b00010100
+`define MEM_SB_OP           8'b00011000
+`define MEM_SH_OP           8'b00011001
+`define MEM_SW_OP           8'b00011010
+
 
 //**************************    与指令存储器ROM有关的宏定义     *****************//
 `define InstAddrBus         31:0            //ROM的地址总线宽度
 `define InstBus             31:0            //ROM的数据总线宽度(字长32 width)
 `define InstMenNum          1023            //ROM的字数1023 (depth)
 `define InstMemNumLog2      10              //ROM实际使用的地址线宽度
+
+//**************************    与数据存储器RAM有关的宏定义     *****************//
+`define DataAddrBus         31:0            //RAM的地址总线宽度(假的，其实是17位不是32位，只是为了方便)
+`define DataBus             31:0            //RAM的数据总线宽度
+`define DataMemNum          1024            //RAM的字数1024 (depth)
+`define DataMemNumLog2      10              //RAM实际使用的地址线宽度
+`define ByteWidth           7:0             //一个字节的宽度
 
 //*************************     与通用寄存器regs有关的宏定义    *******************//
 `define RegAddrBus          4:0             //Regs模块的地址线宽度
