@@ -14,7 +14,17 @@ module ex(
     input wire now_in_delayslot_i,                  //当前指令是否是延迟槽指令
     input wire [`InstAddrBus] return_addr_i,         //返回地址
 
-    input wire [`InstBus] inst_i,                   //指令
+    // HILO模块给出HI,LO寄存器的值
+    input wire[`RegBus] hi_i,
+    input wire[`RegBus] lo_i,
+
+    //把HILO数据相关可能数据传回来
+    input wire[`RegBus] wb_hi_i,
+    input wire[`RegBus] wb_lo_i,
+    input wire wb_whilo_i,
+    input wire[`RegBus] mem_hi_i,
+    input wire[`RegBus] mem_lo_i,
+    input wire mem_whilo_i,
 
     //执行后结果
     output reg[`RegAddrBus] waddr_reg_o,            //写目标寄存器地址
@@ -23,14 +33,42 @@ module ex(
 
     output reg stallreq_o,                           //暂停请求信号
 
-    output wire [`AluOpBus] aluop_o,
-    output wire [`DataAddrBus] mem_addr_o,
-    output wire [`DataBus] reg2_o
+    //HILO写相关的输出
+    output reg[`RegBus] hi_o,
+    output reg[`RegBus] lo_o,
+    output reg whilo_o
 );
 
 //保存逻辑运算的结果
 reg[`RegBus] logicout;
+//移位运算结果
 reg[`RegBus] shiftres;
+//移动操作结果
+reg[`RegBus] moveres;
+//HI寄存器最新值
+reg[`RegBus] HI;
+//LO寄存器最新值
+reg[`RegBus] LO;
+
+
+//***************************************************************************************************//
+//*******************************得到最新HILO的值，解决数据相关****************************************//
+//***************************************************************************************************//
+
+always@(*) begin
+    if(rst == `RstEnable) begin
+        {HI,LO} = {`ZeroWord,`ZeroWord};
+    end
+    else if(mem_whilo_i == `WriteEnable) begin
+        {HI,LO} = {mem_hi_i,mem_lo_i};
+    end
+    else if(wb_whilo_i == `WriteEnable) begin
+        {HI,LO} = {wb_hi_i,wb_lo_i};
+    end
+    else begin
+        {HI,LO} = {hi_i,lo_i};
+    end
+end
 
 //***************************************************************************************************//
 //*******************************根据运算子类型aluop_i进行计算*****************************************//
@@ -54,6 +92,15 @@ always@(*) begin
             `EXE_XOR_OP: begin                                  //异或运算
                 logicout = rdata1_i ^ rdata2_i;
             end
+            `EXE_SLL_OP: begin
+                shiftres = (rdata2_i << rdata1_i[4:0]);
+            end
+            `EXE_SRL_OP: begin
+                shiftres = (rdata2_i >> rdata1_i[4:0]);
+            end
+            `EXE_SRA_OP: begin
+                shiftres = ({32{rdata2_i[31]}}<<(6'd32-{1'b0,rdata1_i[4:0]})) | rdata2_i >> rdata1_i[4:0]; 
+            end
             default: begin
                 logicout = `ZeroWord;
             end
@@ -67,20 +114,42 @@ always@(*) begin
     end
     else begin
         case(aluop_i) 
-            `EXE_SLL_OP: begin                                   //逻辑左移
-                shiftres = rdata1_i << rdata2_i[4:0];
-                                                // rdata1_i：要进行左移操作的数值。
-                                                // rdata2_i：左移的位数。
+            `EXE_SLL_OP: begin
+                shiftres = (rdata2_i << rdata1_i[4:0]);
             end
-            `EXE_SRL_OP: begin                                  //逻辑右移
-                shiftres = rdata1_i >> rdata2_i[4:0];
+            `EXE_SRL_OP: begin
+                shiftres = (rdata2_i >> rdata1_i[4:0]);
             end
-            `EXE_SRA_OP: begin                                  //算术右移
-                // shiftres = rdata1_i >>> rdata2_i[4:0];
-                shiftres = ({32{rdata2_i[31]}}<<(6'd32-{1'b0,rdata1_i[4:0]})) | rdata2_i >> rdata1_i[4:0]; //具体算法
+            `EXE_SRA_OP: begin
+                shiftres = ({32{rdata2_i[31]}}<<(6'd32-{1'b0,rdata1_i[4:0]})) | rdata2_i >> rdata1_i[4:0]; 
             end
             default: begin
                 shiftres = `ZeroWord;
+            end
+        endcase
+    end
+end
+
+always@(*) begin
+    if(rst == `RstEnable) begin
+        moveres = `ZeroWord;
+    end
+    else begin
+        moveres = `ZeroWord;
+        case(aluop_i)
+            `EXE_MFHI_OP: begin
+                moveres = HI;
+            end
+            `EXE_MFLO_OP: begin
+                moveres = LO;
+            end
+            `EXE_MOVZ_OP: begin
+                moveres = rdata1_i;
+            end
+            `EXE_MOVN_OP: begin
+                moveres = rdata1_i;
+            end
+            default: begin
             end
         endcase
     end
@@ -99,6 +168,9 @@ always@(*) begin
         end
         `EXE_RES_SHIFT: begin           //移位运算类型
             wdata_o = shiftres;
+        end
+        `EXE_RES_MOVE: begin
+            wdata_o = moveres;
         end
         `EXE_RES_JUMP_BRANCH: begin     //跳转结果类型，返回跳转前位置处的指令所在地址
             wdata_o = return_addr_i;
@@ -119,12 +191,36 @@ always @(*)begin
     end
 end
 
-//加载和存储指令：
-wire [15:0] offset;
-assign offset = inst_i[15:0];    //取出指令的offset部分
-assign aluop_o = aluop_i;        //传递给mem模块
-assign mem_addr_o = {{16{offset[15]}}, offset} + rdata1_i;
-assign reg2_o = rdata2_i;
+
+
+
+//***************************************************************************************************//
+//*******************************给出LO，HI相关结果***************************************************//
+//***************************************************************************************************//
+
+always@(*) begin
+    if(rst == `RstEnable) begin
+        whilo_o = `WriteDisable;
+        hi_o = `ZeroWord;
+        lo_o = `ZeroWord;
+    end
+    else if(aluop_i == `EXE_MTLO_OP) begin
+        whilo_o = `WriteEnable;
+        hi_o = HI;                  
+        lo_o = rdata1_i;
+    end
+    else if(aluop_i == `EXE_MTHI_OP) begin
+        whilo_o = `WriteEnable;
+        hi_o = rdata1_i;
+        lo_o = LO;
+    end
+    else begin
+        whilo_o = `WriteDisable;
+        hi_o = `ZeroWord;
+        lo_o = `ZeroWord;
+    end
+end
+
 
 endmodule
 
