@@ -128,8 +128,8 @@
 //**************************    与数据存储器RAM有关的宏定义     *****************//
 `define DataAddrBus         31:0            //RAM的地址总线宽度(假的，其实是17位不是32位，只是为了方便)
 `define DataBus             31:0            //RAM的数据总线宽度
-`define DataMemNum          131071          //RAM的字数131071 (depth), =128K
-`define DataMemNumLog2      17              //RAM实际使用的地址线宽度
+`define DataMemNum          1024            //RAM的字数1024 (depth)
+`define DataMemNumLog2      10              //RAM实际使用的地址线宽度
 `define ByteWidth           7:0             //一个字节的宽度
 
 //*************************     与通用寄存器regs有关的宏定义    *******************//
